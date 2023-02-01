@@ -1,0 +1,38 @@
+FROM python:3.8-slim
+
+ENV APP_ENV PROD
+
+# Install common libraries
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    curl \
+ && apt-get autoremove -y
+
+# Install all required build libraries
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends \
+    build-essential
+
+RUN apt-get install libgl1-mesa-glx -y
+RUN apt-get install 'ffmpeg'\ 
+    'libsm6'\ 
+    'libxext6' -y
+
+# RUN pip install -U pip
+RUN apt install git -y
+
+# Install dependencies
+RUN pip install torch torchvision
+RUN pip install opencv-python
+RUN pip install openmim
+RUN mim install mmdet
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . /app
+WORKDIR /app
+
+ENTRYPOINT [ "python" ]
+CMD [ "app.py" ]
